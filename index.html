@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Roleta Feliz</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#000000" />
+  <style>
+    
+
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #000000;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><text x='0' y='140' font-size='120'>🍑💋🔥👄🍆</text></svg>");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  animation: fadeIn 1.2s ease-in;
+}
+
+
+
+
+/* substituído */'https://images.unsplash.com/photo-1617551266825-39c2a5db2492?auto=format&fit=crop&w=1400&q=80') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      animation: fadeIn 1s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    h1, h2 { text-shadow: 2px 2px 4px #000; }
+    .highlight {
+      font-size: 20px;
+      margin: 20px 0;
+      color: #ffaaaa;
+      text-shadow: 1px 1px 3px #000;
+    }
+    button {
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 20px;
+      margin: 10px;
+      font-size: 16px;
+      transition: transform 0.2s ease;
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+    .hidden { display: none; }
+  </style>
+  
+
+
+<link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js').then(() => {
+      console.log("✅ Service Worker registrado!");
+    });
+  }
+</script>
+
+</head>
+<body>
+<h1>Roleta Feliz</h1>
+<h2>Rodada <span id="round">1</span> — <span id="nivel">Normal</span></h2>
+<p id="resultado" class="highlight"></p>
+<button onclick="sortearParticipante()">Sortear Participante</button>
+<button onclick="sortearAcao()" id="btn-acao" disabled>Sortear Ação</button>
+
+<div id="timer-container" class="hidden">
+  <button onclick="iniciarTempo()">Iniciar tempo</button>
+  <p id="timer-texto" class="hidden"></p>
+</div>
+
+</div>
+<button onclick="pularDesafio()">Pular Desafio (-1 ponto)</button>
+<button onclick="reiniciarJogo()">Reiniciar</button>
+
+<audio id="bip" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YQAAAAA=" preload="auto"></audio>
+
+
+
+
+
+<script>
+let rodada = 1;
+let participante = '';
+let fila = { Verdade: [], Desafio: [] };
+let usados = { Verdade: { Marido: [], Esposa: [] }, Desafio: { Marido: [], Esposa: [] } };
+let timer;
+let tempoRestante = 0;
+
+const verdades = {
+  Normal: {
+    Marido: ["Você já fingiu gostar de algo que ela fez?", "O que você mais admira nela?"],
+    Esposa: ["Você já fingiu um orgasmo?", "O que você mais admira nele?"]
+  },
+  Quente: {
+    Marido: ["Qual parte do corpo dela mais te excita?", "Qual foi sua maior fantasia com ela?"],
+    Esposa: ["Qual parte do corpo dele mais te excita?", "Você já teve uma fantasia com ele em público?"]
+  },
+  Safado: {
+    Marido: ["Você já se masturbou pensando nela hoje?", "Você prefere ela por cima ou de quatro?"],
+    Esposa: ["Você já se masturbou hoje pensando nele?", "Você prefere ele te pegando por trás ou de frente?"]
+  },
+  Pervertido: {
+    Marido: ["Você deixaria ela te vendar e dominar?", "Você gostaria que ela te provocasse em público?"],
+    Esposa: ["Você deixaria ele te amarrar e usar brinquedos?", "Você gosta de provocar ele com roupas ousadas?"]
+  }
+};
+
+const desafios = {
+  Normal: {
+    Marido: ["Beije a mão dela", "Diga algo doce no ouvido dela"],
+    Esposa: ["Beije a mão dele", "Diga algo doce no ouvido dele"]
+  },
+  Quente: {
+    Marido: ["Sussurre uma fantasia no ouvido dela", "Passe a mão nos quadris dela por 30 segundos"],
+    Esposa: ["Sussurre uma fantasia no ouvido dele", "Sente no colo dele por 30 segundos"]
+  },
+  Safado: {
+    Marido: ["Acaricie os seios dela por 30 segundos", "Beije a barriga dela lentamente por 30 segundos"],
+    Esposa: ["Massageie o peito dele por 30 segundos", "Beije a virilha dele por 30 segundos"]
+  },
+  Pervertido: {
+    Marido: ["Simule sexo oral nela por 1 minuto", "Diga uma fantasia pervertida que faria com ela"],
+    Esposa: ["Simule sexo oral nele por 1 minuto", "Diga uma fantasia pervertida que faria com ele"]
+  }
+};
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function getNivel() {
+  if (rodada <= 3) return 'Normal';
+  if (rodada <= 6) return 'Quente';
+  if (rodada <= 9) return 'Safado';
+  return 'Pervertido';
+}
+
+function sortearParticipante() {
+  participante = Math.random() < 0.5 ? 'Marido' : 'Esposa';
+  document.getElementById('resultado').textContent = 'Participante: ' + participante;
+  document.getElementById('btn-acao').disabled = false;
+  document.getElementById("timer-container").classList.add("hidden");
+  document.getElementById("timer-texto").classList.add("hidden");
+  document.getElementById("timer-texto").classList.remove("blink");
+}
+
+function sortearAcao() {
+  if (!participante) {
+    document.getElementById('resultado').textContent = "⚠️ Primeiro, sorteie o participante!";
+    return;
+  }
+  const tipo = Math.random() < 0.5 ? 'Verdade' : 'Desafio';
+  const nivel = getNivel();
+  document.getElementById('nivel').textContent = nivel;
+  const fonte = tipo === 'Desafio' ? desafios[nivel][participante] : verdades[nivel][participante];
+  if (!fila[tipo]) fila[tipo] = [];
+  if (!usados[tipo][participante]) usados[tipo][participante] = [];
+  if (fila[tipo].length === 0) fila[tipo] = shuffle([...fonte]);
+  let texto = '';
+  while (fila[tipo].length > 0) {
+    const tentativa = fila[tipo].pop();
+    if (!usados[tipo][participante].includes(tentativa)) {
+      texto = tentativa;
+      usados[tipo][participante].push(tentativa);
+      break;
+    }
+  }
+  if (!texto && fonte.length > 0) {
+    fila[tipo] = shuffle([...fonte]);
+    usados[tipo][participante] = [];
+    texto = fila[tipo].pop();
+    usados[tipo][participante].push(texto);
+  }
+  if (texto) {
+    document.getElementById('resultado').textContent = `${tipo}: ${texto}`;
+    rodada++;
+    document.getElementById('round').textContent = rodada;
+    document.getElementById('btn-acao').disabled = true;
+
+    if (texto.match(/(\d+)\s*(segundos|minuto|minutos)/i)) {
+      document.getElementById("timer-container").classList.remove("hidden");
+    } else {
+      document.getElementById("timer-container").classList.add("hidden");
+    }
+
+    document.getElementById("timer-texto").classList.add("hidden");
+    document.getElementById("timer-texto").classList.remove("blink");
+    clearInterval(timer);
+  }
+}
+
+function iniciarTempo() {
+  const resultado = document.getElementById('resultado').textContent;
+  const tempoMatch = resultado.match(/(\d+)\s*(segundos|minuto|minutos)/i);
+  if (!tempoMatch) {
+    alert("⏱️ Esta ação não possui tempo definido.");
+    return;
+  }
+  let valor = parseInt(tempoMatch[1]);
+  const unidade = tempoMatch[2];
+  tempoRestante = unidade.includes('minuto') ? valor * 60 : valor;
+  const textoTimer = document.getElementById('timer-texto');
+  textoTimer.classList.remove("hidden");
+  textoTimer.classList.remove("blink");
+  textoTimer.textContent = `⏳ Tempo restante: ${tempoRestante}s`;
+  clearInterval(timer);
+  timer = setInterval(() => {
+    tempoRestante--;
+    if (tempoRestante > 0) {
+      textoTimer.textContent = `⏳ Tempo restante: ${tempoRestante}s`;
+    } else {
+      clearInterval(timer);
+      textoTimer.textContent = "⏰ Tempo Esgotado!";
+      textoTimer.classList.add("blink");
+      tocarAlarme();
+    }
+  }, 1000);
+}
+
+function pularDesafio() {
+  if (!participante) {
+    document.getElementById('resultado').textContent = "⚠️ Primeiro, sorteie o participante!";
+    return;
+  }
+  const nivel = getNivel();
+  const tipo = 'Desafio';
+  const fonte = desafios[nivel][participante];
+  let texto = '';
+  let tentativas = [...fonte];
+  shuffle(tentativas);
+  while (tentativas.length > 0) {
+    const tentativa = tentativas.pop();
+    if (!usados[tipo][participante].includes(tentativa)) {
+      texto = tentativa;
+      usados[tipo][participante].push(tentativa);
+      break;
+    }
+  }
+  if (!texto && fonte.length > 0) {
+    usados[tipo][participante] = [];
+    texto = shuffle([...fonte])[0];
+    usados[tipo][participante].push(texto);
+  }
+  if (texto) {
+    document.getElementById('resultado').textContent = `${tipo} (pulando anterior): ${texto}`;
+    document.getElementById("btn-acao").disabled = true;
+
+    if (texto.match(/(\d+)\s*(segundos|minuto|minutos)/i)) {
+      document.getElementById("timer-container").classList.remove("hidden");
+    } else {
+      document.getElementById("timer-container").classList.add("hidden");
+    }
+  }
+}
+
+function reiniciarJogo() {
+  rodada = 1;
+  participante = '';
+  fila = { Verdade: [], Desafio: [] };
+  usados = { Verdade: { Marido: [], Esposa: [] }, Desafio: { Marido: [], Esposa: [] } };
+  document.getElementById('resultado').textContent = '';
+  document.getElementById('round').textContent = rodada;
+  document.getElementById('btn-acao').disabled = true;
+  document.getElementById("timer-container").classList.add("hidden");
+  document.getElementById("timer-texto").classList.add("hidden");
+  document.getElementById("timer-texto").classList.remove("blink");
+  clearInterval(timer);
+}
+
+function tocarAlarme() {
+  const audio = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YdAAAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg');
+  audio.play();
+}
+</script>
+
+</body>
+</html>
+
+

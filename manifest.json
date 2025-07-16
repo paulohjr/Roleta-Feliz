@@ -1,0 +1,14 @@
+{
+  "name": "Roleta Feliz",
+  "short_name": "RoletaFeliz",
+  "description": "Jogo interativo e excitante para casais.",
+  "start_url": "./roleta_feliz_pwa_instalavel.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#ff0033",
+  "icons": [{
+    "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAArUlEQVR42u2XwQ2AIAwF+XvFXfU0+TzqSpDDErMvmKoYQ0OHcCojE5QEzTALJis6A6AaykL+bjG3pF6rTy4Ic6ywgVXEnCJyRLpDJgTRCdo0GcFLDi6eD+Ib5WwDCGZoQ4ESiM2boDwFLbYk0plkCts3cOPmFHu5+0O8L2fHMo7XwLZ1z+/7a3MlfUhXGppTH3CzUpWJvJSYhaAAAAAElFTkSuQmCC",
+    "sizes": "32x32",
+    "type": "image/png"
+  }]
+}
